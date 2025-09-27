@@ -4,13 +4,14 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import fs from 'fs/promises';
 import path from 'path';
 import bcrypt from 'bcryptjs';
+import { User } from '@/lib/types';
 
 const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
 
-async function readUsers() {
+async function readUsers(): Promise<User[]> {
   try {
     const data = await fs.readFile(usersFilePath, 'utf-8');
-    return JSON.parse(data);
+    return JSON.parse(data) as User[];
   } catch (error) {
     return [];
   }
@@ -34,9 +35,9 @@ const handler = NextAuth({
         }
 
         const users = await readUsers();
-        const user = users.find((user: any) => user.id === credentials.id);
+        const user = users.find((user) => user.id === credentials.id);
 
-        if (user && await bcrypt.compare(credentials.password, user.password)) {
+        if (user && user.password && await bcrypt.compare(credentials.password, user.password)) {
           // Return a user object that NextAuth can use
           return { id: user.id, name: user.id, email: user.email };
         }

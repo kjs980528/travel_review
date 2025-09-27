@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { User } from '@/lib/types';
 
 const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
 
-async function readUsers() {
+async function readUsers(): Promise<User[]> {
   try {
     const data = await fs.readFile(usersFilePath, 'utf-8');
-    return JSON.parse(data);
+    return JSON.parse(data) as User[];
   } catch (error) {
-    return [];
+    // If the file doesn't exist, return an empty array
+    if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    throw error;
   }
 }
 
@@ -22,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     const users = await readUsers();
-    const idExists = users.some((user: any) => user.id === id);
+    const idExists = users.some((user) => user.id === id);
 
     if (idExists) {
       return NextResponse.json({ isAvailable: false, message: '이미 사용 중인 아이디입니다.' }, { status: 200 });

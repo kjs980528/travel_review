@@ -2,20 +2,24 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import bcrypt from 'bcryptjs';
+import { User } from '@/lib/types';
 
 const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
 
-async function readUsers() {
+async function readUsers(): Promise<User[]> {
   try {
     const data = await fs.readFile(usersFilePath, 'utf-8');
-    return JSON.parse(data);
+    return JSON.parse(data) as User[];
   } catch (error) {
     // If the file doesn't exist, return an empty array
-    return [];
+    if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    throw error;
   }
 }
 
-async function writeUsers(users: any) {
+async function writeUsers(users: User[]): Promise<void> {
   await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2));
 }
 
@@ -29,19 +33,19 @@ export async function POST(request: Request) {
 
     const users = await readUsers();
 
-    const idExists = users.some((user: any) => user.id === id);
+    const idExists = users.some((user) => user.id === id);
     if (idExists) {
       return NextResponse.json({ message: 'ID already exists' }, { status: 409 });
     }
 
-    const emailExists = users.some((user: any) => user.email === email);
+    const emailExists = users.some((user) => user.email === email);
     if (emailExists) {
       return NextResponse.json({ message: 'Email already exists' }, { status: 409 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = {
+    const newUser: User = {
       id,
       password: hashedPassword,
       email,

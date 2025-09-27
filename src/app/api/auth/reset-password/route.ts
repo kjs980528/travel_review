@@ -2,19 +2,24 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import bcrypt from 'bcryptjs';
+import { User } from '@/lib/types';
 
 const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
 
-async function readUsers() {
+async function readUsers(): Promise<User[]> {
   try {
     const data = await fs.readFile(usersFilePath, 'utf-8');
-    return JSON.parse(data);
+    return JSON.parse(data) as User[];
   } catch (error) {
-    return [];
+    // If the file doesn't exist, return an empty array
+    if (error instanceof Error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    throw error;
   }
 }
 
-async function writeUsers(users: any) {
+async function writeUsers(users: User[]): Promise<void> {
   await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2));
 }
 
@@ -27,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     const users = await readUsers();
-    const userIndex = users.findIndex((user: any) => user.id === id);
+    const userIndex = users.findIndex((user) => user.id === id);
 
     if (userIndex > -1) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
