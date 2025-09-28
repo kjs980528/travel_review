@@ -8,6 +8,9 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [emailLocalPart, setEmailLocalPart] = useState('');
+  const [emailDomain, setEmailDomain] = useState('');
+  const [emailDomainOption, setEmailDomainOption] = useState('직접 입력');
   const [contact, setContact] = useState('');
   const [idMessage, setIdMessage] = useState('');
   const [isIdAvailable, setIsIdAvailable] = useState(false);
@@ -34,6 +37,20 @@ export default function SignupPage() {
     setIsIdAvailable(data.isAvailable);
   };
 
+  const handleEmailDomainChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = e.target.value;
+    setEmailDomainOption(selectedOption);
+    if (selectedOption === '직접 입력') {
+      setEmailDomain('');
+    } else if (selectedOption === '네이버') {
+      setEmailDomain('naver.com');
+    } else if (selectedOption === '다음') {
+      setEmailDomain('daum.net');
+    } else if (selectedOption === '구글') {
+      setEmailDomain('google.com');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isIdAvailable) {
@@ -45,12 +62,15 @@ export default function SignupPage() {
       return;
     }
 
+    const fullEmail = `${emailLocalPart}@${emailDomain}`;
+    setEmail(fullEmail);
+
     const response = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id, password, email, contact }),
+      body: JSON.stringify({ id, password, email: fullEmail, contact }),
     });
 
     if (response.ok) {
@@ -63,26 +83,26 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-[calc(100vh-200px)] flex flex-col items-center justify-center bg-[#ffffff] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg"> {/* Added bg-white, p-8, rounded-lg, shadow-lg */}
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             회원가입
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="space-y-4"> {/* Changed from -space-y-px to space-y-4 */}
             <div>
               <label htmlFor="id" className="sr-only">
                 아이디
               </label>
-              <div className="flex items-center">
+              <div className="flex items-center space-x-2"> {/* Added space-x-2 for button spacing */}
                 <input
                   id="id"
                   name="id"
                   type="text"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" // Changed rounded-t-md to rounded-md, removed rounded-none
                   placeholder="아이디"
                   value={id}
                   onChange={handleIdChange}
@@ -90,7 +110,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={handleIdCheck}
-                  className="ml-2 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700"
+                  className="flex-shrink-0 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700" // Adjusted px, removed ml-2, added flex-shrink-0
                 >
                   중복 확인
                 </button>
@@ -111,7 +131,7 @@ export default function SignupPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" // Added rounded-md, removed rounded-none
                 placeholder="비밀번호"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -127,27 +147,51 @@ export default function SignupPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" // Added rounded-md, removed rounded-none
                 placeholder="비밀번호 확인"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="email-address" className="sr-only">
-                이메일 주소
+              <label htmlFor="email-local-part" className="sr-only">
+                이메일
               </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="이메일 주소"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <div className="flex items-center space-x-2">
+                <input
+                  id="email-local-part"
+                  name="email-local-part"
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="이메일"
+                  value={emailLocalPart}
+                  onChange={(e) => setEmailLocalPart(e.target.value)}
+                />
+                <span>@</span>
+                <input
+                  id="email-domain"
+                  name="email-domain"
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="도메인"
+                  value={emailDomain}
+                  onChange={(e) => setEmailDomain(e.target.value)}
+                  disabled={emailDomainOption !== '직접 입력'}
+                />
+                <select
+                  id="email-domain-select"
+                  value={emailDomainOption}
+                  onChange={handleEmailDomainChange}
+                  className="appearance-none relative block px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                  <option value="직접 입력">직접 입력</option>
+                  <option value="네이버">naver.com</option>
+                  <option value="다음">daum.net</option>
+                  <option value="구글">google.com</option>
+                </select>
+              </div>
             </div>
             <div>
               <label htmlFor="contact" className="sr-only">
@@ -158,7 +202,7 @@ export default function SignupPage() {
                 name="contact"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" // Added rounded-md, removed rounded-none, removed rounded-b-md
                 placeholder="연락처"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}

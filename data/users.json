@@ -4,5 +4,11 @@
     "password": "$2b$10$YRZYjhyEEPTgm.IhROYWA.hCqTKGSacaQ3orJoHe8vVEfmlnGWWfe",
     "email": "sjhjkk@gmail.com",
     "contact": "01057171338"
+  },
+  {
+    "id": "sjk",
+    "password": "$2b$10$rVKTZICrKApryHy9auouY.5QbTMGXggjpDid5tQFdTRUFykiv8jOC",
+    "email": "ss@naver.com",
+    "contact": "0110000000"
   }
 ]
