@@ -6,7 +6,7 @@ import path from 'path';
 import bcrypt from 'bcryptjs';
 import { User } from '@/lib/types';
 
-const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
+const usersFilePath = path.resolve(process.cwd(), 'data', 'users.json');
 
 async function readUsers(): Promise<User[]> {
   try {
